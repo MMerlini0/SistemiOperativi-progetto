@@ -6,7 +6,7 @@ L1. Pseudo Malloc:
    The system relies on mmap for the physical allocation of memory, but handles the requests in
    2 ways:
    - for small requests (< 1/4 of the page size) it uses a buddy allocator.
-     Clearly, such a buddy allocator can manage at most page-size bytes
+     Clearly, such a buddy allocator can manage at most page-size bytes.
      For simplicity use a single buddy allocator, implemented with a bitmap
      that manages 1 MB of memory for these small allocations.
 
@@ -14,61 +14,41 @@ L1. Pseudo Malloc:
 
 
 
---------INCIPIT--------
-
-Caso con allocazione memoria < 1/4 della dimensione di pagina:
 
 
+--------PIANIFICAZIONE--------
+
+La nostra funzione principale sarà del tipo
+
+            disastrOS_malloc(memoria_richiesta);
+
+E avrà una distinzione
+
+---Richieste piccole:
+
+            if (memoria_richiesta < (PAGE_SIZE/4))
+
+    Uso un buddy allocator:
+
+            disastrOS_buddyAllocator(memoria_richiesta)
+    
+---Richieste grandi:
+
+    Uso mmap:
+
+            disastrOS_mmap(memoria_richiesta)
 
 
-Il sistema si basa su mmap per l'allocazione di memoria >= 1/4 della dimensione di pagina.
-Aalizziamo la mmap:
+Successivamente dovrò creare anche una funzione di free
+
+            disastrOS_free(indirizzoMemoria)
 
 
+
+
+
+
+
+malloc linux manual page: (https://man7.org/linux/man-pages/man3/malloc.3.html)
 mmap linux manual page: (https://man7.org/linux/man-pages/man2/mmap.2.html)
-
-NAME         
-       mmap, munmap - map or unmap files or devices into memory
-LIBRARY         
-       Standard C library (libc, -lc)
-SYNOPSIS         
-       #include <sys/mman.h>
-
-       void *mmap(void addr[.length], size_t length, int prot, int flags,
-                  int fd, off_t offset);
-       int munmap(void addr[.length], size_t length);
-DESCRIPTION         
-       mmap() creates a new mapping in the virtual address space of the
-       calling process.  The starting address for the new mapping is
-       specified in addr.  The length argument specifies the length of
-       the mapping (which must be greater than 0).
-
-       If addr is NULL, then the kernel chooses the (page-aligned)
-       address at which to create the mapping; this is the most portable
-       method of creating a new mapping.  If addr is not NULL, then the
-       kernel takes it as a hint about where to place the mapping; on
-       Linux, the kernel will pick a nearby page boundary (but always
-       above or equal to the value specified by
-       /proc/sys/vm/mmap_min_addr) and attempt to create the mapping
-       there.  If another mapping already exists there, the kernel picks
-       a new address that may or may not depend on the hint.  The address
-       of the new mapping is returned as the result of the call.
-
-       The contents of a file mapping (as opposed to an anonymous
-       mapping; see MAP_ANONYMOUS below), are initialized using length
-       bytes starting at offset offset in the file (or other object)
-       referred to by the file descriptor fd.  offset must be a multiple
-       of the page size as returned by sysconf(_SC_PAGE_SIZE).
-
-       After the mmap() call has returned, the file descriptor, fd, can
-       be closed immediately without invalidating the mapping.
-
-       The prot argument describes the desired memory protection of the
-       mapping (and must not conflict with the open mode of the file).
-       It is either PROT_NONE or the bitwise OR of one or more of the
-       following flags:
-
-
-
---------CODICE SLIDES--------
 

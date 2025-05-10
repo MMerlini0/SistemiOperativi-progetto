@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "buddy_allocator.h": "c"
+        "buddy_allocator.h": "c",
+        "bit_map.h": "c"
     }
 }

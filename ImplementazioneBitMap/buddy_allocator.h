@@ -5,6 +5,10 @@
 
 #define MAX_LEVELS 16
 
+
+
+// NON USO PIU LA LISTA
+/*
 // one entry of the buddy list
 typedef struct BuddyListItem {
   ListItem list;
@@ -15,17 +19,16 @@ typedef struct BuddyListItem {
   struct BuddyListItem* buddy_ptr;
   struct BuddyListItem* parent_ptr;
 } BuddyListItem;
+ */
 
 
 typedef struct  {
-  // NON DEVO PIU UTILIZZARE LE LISTE PER I FREE
-  // UTILIZZERO' I BITMAP
-  // QUINDI OGNI BUDDY ALLOCATOR TERRA' LA SUA BITMAP
-  BitMap bitmap;
   //ListHead free[MAX_LEVELS];
+  BitMap bitmap;
   int num_levels;
-  PoolAllocator list_allocator;
-  char* memory; // the memory area to be managed
+  //PoolAllocator list_allocator;
+  char* memory; // MEMORIA
+  int memory_size;
   int min_bucket_size; // the minimum page of RAM that can be returned
 } BuddyAllocator;
 
@@ -37,9 +40,10 @@ int BuddyAllocator_calcSize(int num_levels);
 // initializes the buddy allocator, and checks that the buffer is large enough
 void BuddyAllocator_init(BuddyAllocator* alloc,
                         int num_levels,
-                        char* buffer,
-                        int buffer_size,
                         char* memory,
+                        int memory_size,
+                        char* bufferBitmap,
+                        int bufferBitmap_size,
                         int min_bucket_size);
 
 // returns (allocates) a buddy at a given level.

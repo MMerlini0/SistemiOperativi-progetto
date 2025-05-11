@@ -1,6 +1,5 @@
 #pragma once
 #include "pool_allocator.h"
-#include "linked_list.h"
 #include "bit_map.h"
 
 #define MAX_LEVELS 16
@@ -38,7 +37,7 @@ int BuddyAllocator_calcSize(int num_levels);
 
 
 // initializes the buddy allocator, and checks that the buffer is large enough
-void BuddyAllocator_init(BuddyAllocator* alloc,
+int BuddyAllocator_init(BuddyAllocator* alloc,
                         int num_levels,
                         char* memory,
                         int memory_size,
@@ -46,6 +45,12 @@ void BuddyAllocator_init(BuddyAllocator* alloc,
                         int bufferBitmap_size,
                         int min_bucket_size);
 
+
+
+
+
+
+/*
 // returns (allocates) a buddy at a given level.
 // side effect on the internal structures
 // 0 id no memory available
@@ -61,3 +66,4 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size);
 
 //releases allocated memory
 void BuddyAllocator_free(BuddyAllocator* alloc, void* mem);
+*/

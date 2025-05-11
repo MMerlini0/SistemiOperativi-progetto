@@ -37,3 +37,4 @@ int BitMap_bit(const BitMap* bit_map, int bit_num){
   int bit_in_byte = byte_num & 0x07;
   return (bit_map->buffer[byte_num] & (1<<bit_in_byte))!=0;
 }
+

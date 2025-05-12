@@ -13,7 +13,7 @@ int levelIdx(size_t idx){ // RIPORTA IL LIVELLO DELL'INDICE
 int buddyIdx(int idx){
   // LA FUNZIONE RIPORTA L'INDICE DEL BLOCCO FRATELLO
   // CASO DELLA RADICE
-  if (idx = 0) { return 0;}
+  if (idx == 0) { return 0;}
   // CONTROLLO SE L'INDICE DATO E' PARI
   // CIOE' SE E' UN FIGLIO SINISTRO O DESTRO
   if (idx&0x1){ // RIPORTA 1 SE idx E' DISPARI -> idx E' UN FIGLIO DI SX
@@ -168,7 +168,7 @@ int BuddyAllocator_init(BuddyAllocator* alloc,
   printf("BUDDY INITIALIZING\n");
   printf("\tlevels: %d", num_levels);
   printf("Memoria per la BitMap: %d bytes usati\n", num_bytes);
-  printf("Bytes forniti: %d \n", bufferBitmap);
+  printf("Bytes forniti: %d \n", bufferBitmap_size);
   printf("\tbucket size:%d\n", min_bucket_size);
   printf("\tmanaged memory %d bytes\n", (1<<num_levels)*min_bucket_size);
 
@@ -292,8 +292,8 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
 
   //CONTROLLO DIMENSIONE RICHIESTA ALLOCAZIONE  
   if (max_size < size) {
-      printf("\nEXEDED MAX DIMENSION, MEMORY FAULT.\n", size);
-      return -1;
+      printf("\nEXEDED MAX DIMENSION, MEMORY FAULT.\n");
+      return NULL;
   }
 
 

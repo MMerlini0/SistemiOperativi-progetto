@@ -1,5 +1,5 @@
 #pragma once
-#include "pool_allocator.h"
+// #include "pool_allocator.h"
 #include "bit_map.h"
 
 #define MAX_LEVELS 16
@@ -32,8 +32,10 @@ typedef struct  {
 } BuddyAllocator;
 
 
+/*
 // computes the size in bytes for the buffer of the allocator
 int BuddyAllocator_calcSize(int num_levels);
+*/
 
 
 // initializes the buddy allocator, and checks that the buffer is large enough
@@ -67,3 +69,18 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size);
 //releases allocated memory
 void BuddyAllocator_free(BuddyAllocator* alloc, void* mem);
 */
+
+//allocates memory
+void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size);
+
+//releases allocated memory
+void BuddyAllocator_free(BuddyAllocator* alloc, void* mem);
+
+//setta lo stato dei genitori a status
+void BitMap_setParentsBit(BitMap *bit_map, int bit_num, int status);
+
+//setta lo stato dei discendenti a status
+void BitMap_setChildrensBit(BitMap *bit_map, int bit_num, int status);
+
+//funzione per ricompattare i vari livelli
+void merge(BitMap *bitmap, int idx);

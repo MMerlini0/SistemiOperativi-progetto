@@ -13,10 +13,7 @@ BuddyAllocator alloc;
 
 
 int main(int argc, char** argv) {
-
-    int buf_size = BUFFER_SIZE;
-    int levels = BUDDY_LEVELS;    
-    int min_bucket_size = buf_size >> (levels); // (buf_size) / (2^levels)
+  
 
   /*
   //1 we see if we have enough memory for the buffers
@@ -41,10 +38,13 @@ int main(int argc, char** argv) {
   printf("DONE\n");
 
   void* p1=BuddyAllocator_malloc(&alloc, 100);
-  void* p2=BuddyAllocator_malloc(&alloc, 100);
-  void* p3=BuddyAllocator_malloc(&alloc, 100000);
   BuddyAllocator_free(&alloc, p1);
+
+  void* p2=BuddyAllocator_malloc(&alloc, 14);
   BuddyAllocator_free(&alloc, p2);
+
+
+  void* p3=BuddyAllocator_malloc(&alloc, 100000);
   BuddyAllocator_free(&alloc, p3);
   
 }

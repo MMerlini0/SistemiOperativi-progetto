@@ -27,13 +27,16 @@ int parentIdx(int idx){ // RIPORTA L'INDICE DEL PADRE
   return (idx - 1) / 2;
 }
 
-int startIdx(int idx){ // PRIMO INDICE DEL LIVELLO
+
   // Il primo indice del livello l è sempre 2^lvl - 1.
   // return (idx-(1<<levelIdx(idx)));
-  int level = levelIdx(idx);
-  return (1 << level) - 1;
+int firstIdx(int level) { // PRIMO INDICE DEL LIVELLO
+  return (1 << level)-1; //2^level -1
 }
 
+int startIdx(int idx){
+  return (idx-(firstIdx(levelIdx(idx))));//idx-firstidx(level(idx))
+}
 
 // SETTA I BIT DEI PARENTI DELL'INDICE PASSATO
 void BitMap_setParentsBit(BitMap *bit_map, int bit_num, int status){
@@ -148,7 +151,7 @@ int BuddyAllocator_init(BuddyAllocator* alloc,
     printf("NUMERO DI LIVELLI MAGGIORE DI 16, INIZIALIZZAZIONE BUDDY ALLOCATOR TERMINATA");
     return 0;
   }
-  if(bufferBitmap_size >= num_bytes){
+  if(bufferBitmap_size < num_bytes){
     printf("MEMORIA INSUFFICIENGTE PER LA BITMAP");
     return 0;
   }
@@ -176,6 +179,9 @@ int BuddyAllocator_init(BuddyAllocator* alloc,
 
   // INIZIALIZZO LA BITMAP
   BitMap_init(&alloc->bitmap, num_bits, bufferBitmap);
+
+  Bitmap_print(&alloc->bitmap);
+  
   return 1;
 
 
@@ -307,7 +313,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   if (target_level < 0) target_level = 0;
   if (target_level > total_levels) target_level = total_levels;
 
-  printf("/n Livello da assegnare: %d", target_level);
+  printf("\n Livello da assegnare: %d", target_level);
 
   // CERCO UN BLOCCO LIBERO NEL LIVELLO TROCATO
   int freeidx=-1;  //free rimarrà -1 se non troviamo nessun blocco libero, altrimenti sarà l'indice del nostro blocco libero
@@ -316,7 +322,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   // CASO PRIMO LIVELLO
   if ( target_level == 0) {
     // CONTROLLO SE LIBERO
-    if (!BitMap_bit(&alloc->bitmap, startIdx(target_level))) {
+    if (!BitMap_bit(&alloc->bitmap, firstIdx(target_level))) {
       freeidx = 0;
     }
     // CASO IN CUI NON E' LIBERO
@@ -328,9 +334,10 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   // SE NON E' IL PRIMO LIVELLO
   else {
     // RICORSIONE SU TUTTI I LIVELLI DI QUESTO BLOCCO FINO A QUELLI DEL SUCCESSIVO
-    for (int j = startIdx(target_level); j < startIdx(target_level+1); j++) {
+    for (int j = firstIdx(target_level); j < firstIdx(target_level+1); j++) {
       // CONTROLLO SE LIBERO
       if (!BitMap_bit(&alloc->bitmap, j)) {
+        printf("\nTrovato blocco libero nel livello %d\n", j);
         freeidx=j;
         break;
       }
@@ -338,17 +345,11 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   }
 
   // CONTROLLO SE NON HA TROVATO BLOCCHI LIBERI
-  if(freeidx==-1){  
+  if(freeidx == -1){  
     printf("\nNon ci sono blocchi liberi nel livello %d\n", target_level);
     // CONTROLLA TUTTI! I BIT DEL LIEVLLO, QUINDI ANCHE QUELLI NON SPLITTATI, RICERCA FRA TUTTI
     // I POSSIBILI SPAZI DI QUESTO LIEVLLO
     return NULL;
-  }
-
-  printf("\t\t\tINDICE DEL BUDDY LIBERO: %d", freeidx);
-  if(freeidx==-1){  
-      printf("\nNon ci sono blocchi liberi. MEMORY FAULT. \n");
-      return NULL;
   }
 
 
@@ -372,7 +373,9 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   ((int *)indirizzo)[0]=freeidx;
   printf("\nAllocato un nuovo blocco di dimensione %d al livello %d utilizzando un blocco di dimensioni %d.\nIndice %d,puntatore \033[34m%p\033[0m\n", size, target_level, memory_size_at_level, freeidx, indirizzo+sizeof(int));
   printf("Albero BITMAP dopo l'allocazione:\n");
-  // Bitmap_print(&alloc->bitmap);
+  
+  
+  Bitmap_print(&alloc->bitmap);
   // RIPORTO IL BLOCCO, MA SALTANDO IL PRIMO BYTE CHE E' PER IL BOOKKEPING
   return (void *)(indirizzo + sizeof(int));
 };
@@ -418,9 +421,8 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   merge(&alloc->bitmap, idx_to_free);
 
   //printf("Bitmap dopo la free:");
-  //Bitmap_print(&alloc->bitmap);
+  Bitmap_print(&alloc->bitmap);
 }
-
 
 
 
@@ -500,3 +502,32 @@ void BuddyAllocator_free(BuddyAllocator* alloc, void* mem) {
 */
   
 
+
+
+
+
+void Bitmap_print(BitMap *bit_map){
+    int remain_to_print = 0;
+    int lvl = -1; 
+    int tot = levelIdx(bit_map->num_bits) - 1;  //numero di livelli totale
+    for (int i = 0; i < bit_map->num_bits; i++){  
+        if (remain_to_print == 0){ //se non rimangono bit da stampare al livello lvl
+            if(lvl==tot){ //se siamo arrivati all'ultimo livello stop
+              break;
+            } 
+            printf("\n\033[93mLivello %d: \t\033[0m", ++lvl);     //indice del primo elemento del livello: i
+            for (int j = 0; j < (1 << tot) - (1 << lvl); j++){   //stampa degli spazi dopo aver scritto "Livello x:"
+              printf(" "); //stampa spazi
+            } 
+            remain_to_print = 1 << lvl; //al prossimo livello dovremo stampare 2^lvl bit
+        }
+        if (BitMap_bit(bit_map, i)==0){ //se il blocco è 0 lo stampiamo verde
+          printf("\033[32m%d\033[0m ", BitMap_bit(bit_map, i));
+        }
+        else{   //altrimenti lo stampiamo rosso
+          printf("\033[31m%d\033[0m ", BitMap_bit(bit_map, i));
+        }
+        remain_to_print--;  //1 bit in meno da stampare
+    }
+    printf("\n");
+};

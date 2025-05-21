@@ -1,28 +1,19 @@
 CC=gcc
-CCOPTS=--std=gnu99 -Wall -D_LIST_DEBUG_ 
-AR=ar
+CFLAGS=-Wall -std=gnu99
 
-OBJS=bit_map.o \
-    buddy_allocator.o
-
-HEADERS=bit_map.h buddy_allocator.h
-
-LIBS=libbuddy.a
-
-BIN=buddy_allocator_test.exe
+SRC=bit_map.c buddy_allocator.c buddy_allocator_test.c disastrOS_malloc.c
+OBJ=$(SRC:.c=.o)
+BIN=disastrOS_malloc.exe
 
 .PHONY: all clean
 
 all: $(BIN)
 
-%.o: %.c $(HEADERS)
-	$(CC) $(CCOPTS) -c -o $@ $<
+$(BIN): $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
 
-$(LIBS): $(OBJS)
-	$(AR) -rcs $@ $^
-
-$(BIN): buddy_allocator_test.o $(LIBS)
-	$(CC) $(CCOPTS) -o $@ $^ -lm
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	-del /Q *.o *.a *.exe 2>NUL
+	del /Q *.o *.exe 2> NUL

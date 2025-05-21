@@ -10,8 +10,9 @@ int levelIdx(size_t idx){ // RIPORTA IL LIVELLO DELL'INDICE
   return (int)floor(log2(idx+1));
 };
 
-int buddyIdx(int idx){
-  // LA FUNZIONE RIPORTA L'INDICE DEL BLOCCO FRATELLO
+
+// LA FUNZIONE RIPORTA L'INDICE DEL BLOCCO FRATELLO
+int buddyIdx(int idx) { 
   // CASO DELLA RADICE
   if (idx == 0) { return 0;}
   // CONTROLLO SE L'INDICE DATO E' PARI
@@ -34,13 +35,16 @@ int firstIdx(int level) { // PRIMO INDICE DEL LIVELLO
   return (1 << level)-1; //2^level -1
 }
 
+// RESITTUISCE L'OFFSET DELL'INDICE PASSATO RISPETTO AL PRIMO INDICE DI QUEL LIVELLO
 int startIdx(int idx){
-  return (idx-(firstIdx(levelIdx(idx))));//idx-firstidx(level(idx))
+  return (idx-(firstIdx(levelIdx(idx))));
 }
+
+
 
 // SETTA I BIT DEI PARENTI DELL'INDICE PASSATO
 void BitMap_setParentsBit(BitMap *bit_map, int bit_num, int status){
-  while (bit_num != 0) {
+  while (bit_num >= 0) {
     BitMap_setBit(bit_map, bit_num, status);
     bit_num = parentIdx(bit_num);
   }
@@ -64,7 +68,7 @@ void BitMap_setChildrensBit(BitMap *bit_map, int bit_num, int status) {
         int left = 2 * current + 1;
         int right = 2 * current + 2;
 
-        // Push dei figli nello stack (prima destro per visitare sinistro prima)
+        // Push dei figli nella lista simula-stack (prima destro per visitare sinistro prima)
         if (right < bit_map->num_bits)
             stack[top++] = right;
         if (left < bit_map->num_bits)
@@ -73,8 +77,7 @@ void BitMap_setChildrensBit(BitMap *bit_map, int bit_num, int status) {
 }
 
 
-//                                              QUA IL TIPO SI CALCOLA UNA FUNZIONE PER AVERE OFFSET FRA PRIMO
-//                                              INDICE DEL LIVELLO E IDX PASSATO
+
 
 
 
@@ -126,17 +129,29 @@ void BuddyAllocator_destroyListItem(BuddyAllocator* alloc, BuddyListItem* item){
 
 
 
+
+// FUNZIONE DI CALCOLO DIMENSIONE BUFFER 
+int BufferSizeCalculator(int num_levels) {
+    // CALCOLO BITS PER LA BITMAP
+    int num_bits = (1 << (num_levels + 1)) - 1 ;  //n.bit = (2^(num_levels+1))-1
+    int num_bytes = BitMap_getBytes(num_bits);
+    // CONTROLLI SU NUMERO LIVELLI E CAPACITA MEMORIA
+
+    return num_bytes;
+}
+
+
 // USO UN UNICO BUFFER, CHE DIVIDERO' IN DUE PARTI, L'INIZIO PER LA BITMAP E IL RESTO PER L'ALLOCATOR
 int BuddyAllocator_init(BuddyAllocator* alloc,
                         int num_levels,
-                        char* memory, // BUFFER E' LA MEMORIA, E' QUANTO STO ALLOCANDO MANNAGGIA
-                        int memory_size,
                         char* bufferBitmap,
                         int bufferBitmap_size,
-                        int min_bucket_size){
+                        char* memory, // BUFFER E' LA MEMORIA, E' QUANTO STO ALLOCANDO MANNAGGIA
+                        int memory_size,
+                        int min_bucket_size) {
 
   
-  if (min_bucket_size < 8) {
+  if (min_bucket_size < 8) { // PIU PICCOLO DI UN BYTE
       printf("Minimum bucket troppo piccolo\n");
       return 0;
   }
@@ -169,11 +184,11 @@ int BuddyAllocator_init(BuddyAllocator* alloc,
   */
 
   printf("BUDDY INITIALIZING\n");
-  printf("\tlevels: %d", num_levels);
-  printf("Memoria per la BitMap: %d bytes usati\n", num_bytes);
-  printf("Bytes forniti: %d \n", bufferBitmap_size);
-  printf("\tbucket size:%d\n", min_bucket_size);
-  printf("\tmanaged memory %d bytes\n", (1<<num_levels)*min_bucket_size);
+  printf("levels: %d \n", num_levels);
+  printf("Memoria per la BitMap: %d\n", num_bytes);
+  printf("Bytes forniti (buffer): %d \n", bufferBitmap_size);
+  printf("min_bucket size:%d\n", min_bucket_size);
+  printf("Memoria gestita: %d bytes\n", (1<<num_levels)*min_bucket_size);
 
 
 
@@ -298,6 +313,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
 
   //CONTROLLO DIMENSIONE RICHIESTA ALLOCAZIONE  
   if (max_size < size) {
+      printf("\n max_size: %d, size: %d\n", max_size, size);
       printf("\nEXEDED MAX DIMENSION, MEMORY FAULT.\n");
       return NULL;
   }
@@ -403,22 +419,15 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   printf("\nLibero il blocco puntato da \033[34m%p\033[0m . . .\n", mem);
 
   // PRENDO L'INDICE DEL BUDDY PRESO IN CONSIDERAZIONE
-  int *p = (int *)mem;
-  int idx_to_free = p[-1];
-
-  printf("Indice da liberare: %d\n", idx_to_free);
-  //C CALCOLO DIMENSIONE DEL BUDDY DA RIMUOVERE
-  int dim_lvl = alloc->min_bucket_size * (1 << (alloc->num_levels - levelIdx(idx_to_free)));
-  // PRENDO IL PUNTATORE E LO POSIZIONO ALL'INIZIO DEL BLOCCO DA RIMUOVERE
-  char *p_to_free = alloc->memory + startIdx(idx_to_free) * dim_lvl;
-  assert("Puntatore non allineato" && (int *)p_to_free == &p[-1]); //se la dimensione del buddy non è quella che dovrebbe essere, abbiamo un errore
-  //bisogna evitare double free
-  assert("Double free" && BitMap_bit(&alloc->bitmap, idx_to_free));
+  // IL PRIMO ELEMENTO DEL BUCKET E' L'INDICE
+  int *primoElem = (int *)mem;
+  int indice = primoElem[-1];
+  printf("Indice da liberare: %d\n", indice);
 
   //dopo aver liberato un blocco dobbiamo settare a 0 tutti i suoi discendendi
-  BitMap_setChildrensBit(&alloc->bitmap, idx_to_free, 0);
+  BitMap_setChildrensBit(&alloc->bitmap, indice, 0);
   // RICHIAMO LA FUNZIONE DI MERGE IN CASO AVESSE FRATELLO NON USATO
-  merge(&alloc->bitmap, idx_to_free);
+  merge(&alloc->bitmap, indice);
 
   //printf("Bitmap dopo la free:");
   Bitmap_print(&alloc->bitmap);
@@ -446,19 +455,21 @@ void merge(BitMap *bitmap, int idx) {
     assert("Non puoi fare il merge su un bit libero" && !BitMap_bit(bitmap, idx));
 
     while (idx != 0) { // finché non siamo alla radice
-        int idx_buddy = buddyIdx(idx);
 
-        if (!BitMap_bit(bitmap, idx_buddy)) {
-            printf("Il buddy di %d, ovvero %d, è libero: MERGE\n", idx, idx_buddy);
-            printf("Eseguo il merge dei buddy %d e %d al livello %d . . .\n", idx, idx_buddy, levelIdx(idx));
+        int indice_fratello = buddyIdx(idx); // PRENDO INDICE DEL FRATELLO
 
-            // merge: setto il parent a libero
-            int parent_idx = parentIdx(idx);
-            BitMap_setBit(bitmap, parent_idx, 0);
-            // risalgo al genitore
-            idx = parent_idx;
+        // SE IL BIT E' LIBERO
+        if (!BitMap_bit(bitmap, indice_fratello)) {
+            printf("Il buddy di %d, ovvero %d, e' libero: MERGE\n", idx, indice_fratello);
+            printf("Eseguo il merge dei buddy %d e %d al livello %d . . .\n", idx, indice_fratello, levelIdx(idx));
+
+            // SETTO IL GENITORE A LIBERO
+            int indice_genitore = parentIdx(idx);
+            BitMap_setBit(bitmap, indice_genitore, 0);
+            // RISALGO AL GENITORE
+            idx = indice_genitore;
         } else {
-            printf("Il buddy di %d, ovvero %d, NON è libero: NO MERGE\n", idx, idx_buddy);
+            printf("Il buddy di %d, ovvero %d, NON è libero: NO MERGE\n", idx, indice_fratello);
             break;
         }
     }
@@ -505,7 +516,7 @@ void BuddyAllocator_free(BuddyAllocator* alloc, void* mem) {
 
 
 
-
+// FUNZIONE DI PRINT CON RICORSIONE, DI DEBUGGING
 void Bitmap_print(BitMap *bit_map){
     int remain_to_print = 0;
     int lvl = -1; 

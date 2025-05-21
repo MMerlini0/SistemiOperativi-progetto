@@ -86,3 +86,5 @@ void BitMap_setChildrensBit(BitMap *bit_map, int bit_num, int status);
 void merge(BitMap *bitmap, int idx);
 
 void Bitmap_print(BitMap *bit_map);
+
+int BufferSizeCalculator(int num_levels);

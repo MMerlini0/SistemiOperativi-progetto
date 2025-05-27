@@ -18,9 +18,9 @@ L1. Pseudo Malloc:
 
 --------PIANIFICAZIONE--------
 
-Modificare buddyAllocator in modo da poter decidere numero livelli massimi
-Modificare buddyAllocator in modo da dividere l'area di buffer e l'area di memoria passata solo la memoria (chiedere al professore prima se ha senso)
-Modificare la memoria e i livelli massimi del buddy allocator in base alle specifiche date
+
+
+Chiedere (utile per tesi) perché la ricorsione va evitata dentro OS
 
 Creare implementazione mmap
 

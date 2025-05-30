@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 // #define BUFFER_SIZE 102400
-#define TOTAL_MEMORY_SIZE (1024*1024) // LA MEMORY SIZE INIZIALE E' SEMPRE DI 1MB COME DETTO NELLE SPECIFICHE DI PROGETTO
+#define BUDDYALLOCATOR_TOTAL_MEMORY_SIZE (1024*1024) // LA MEMORY SIZE INIZIALE E' SEMPRE DI 1MB COME DETTO NELLE SPECIFICHE DI PROGETTO
 
 BuddyAllocator alloc;
 
@@ -22,7 +22,7 @@ int BuddyAllocator_alloc(char* memoria_totale) {
 
   
   // SUDDIVISIONE DELLA MEMORIA TOTALE IN ZONA BUFFER (per bitmap) E ZONA DI MEMORIA
-  int MEMORY_SIZE = TOTAL_MEMORY_SIZE - BUFFER_SIZE;
+  int MEMORY_SIZE = BUDDYALLOCATOR_TOTAL_MEMORY_SIZE - BUFFER_SIZE;
   printf("MEMORY SIZE: %d\n BUFFER SIZE: %d\n", MEMORY_SIZE, BUFFER_SIZE);
   char* buffer = memoria_totale;                    // inizia da inizio array
   char* memory = memoria_totale + BUFFER_SIZE;      // parte dopo la bitmap

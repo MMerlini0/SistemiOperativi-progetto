@@ -5,7 +5,7 @@ CFLAGS = -Wall -std=gnu99
 # Sorgenti e oggetti
 SRC = bit_map.c buddy_allocator.c disastrOS_malloc.c
 OBJ = $(SRC:.c=.o)
-BIN = disastrOS_malloc.exe
+BIN = disastrOS_malloc
 
 .PHONY: all clean
 
@@ -14,7 +14,7 @@ all: $(BIN)
 
 # Linking finale
 $(BIN): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Compilazione dei .c in .o
 %.o: %.c
@@ -22,4 +22,4 @@ $(BIN): $(OBJ)
 
 # Pulizia
 clean:
-	del /Q *.o *.exe 2> NUL
+	rm -f *.o $(BIN)

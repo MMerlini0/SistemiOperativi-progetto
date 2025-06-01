@@ -20,7 +20,7 @@ Il corrente git riporta l'implementazione della seguente consegna di progetto:
 All'interno del git vi si possono trovare **due cartelle**, che riportano lo stesso codice.
 
 - La cartella **`CodiceCommentato/`** contiene:
-  - Una gran parte di **commenti** che spiegano quasi ogni singola operazione e funzione.
+  - Il **codice** con gran parte di **commenti** che spiegano quasi ogni singola operazione e funzione.
   - Presenta inoltre anche le parti di codice della vecchia implementazione del `buddyAllocator` tramite liste, e, in alcune parti, commenti che ne specificano  le differenze.
 
 - La cartella **`PseudoMalloc/`** contiene:

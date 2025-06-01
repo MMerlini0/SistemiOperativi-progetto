@@ -21,7 +21,7 @@ All'interno del git vi si possono trovare **due cartelle**, che riportano lo ste
 
 - La cartella **`CodiceCommentato/`** contiene:
   - Il **codice** con gran parte di **commenti** che spiegano quasi ogni singola operazione e funzione.
-  - Presenta inoltre anche le parti di codice della vecchia implementazione del `buddyAllocator` tramite liste, e, in alcune parti, commenti che ne specificano  le differenze.
+  - Presenta inoltre anche le parti di codice della vecchia implementazione (riportate in commenti) del buddyAllocator tramite liste, e, in alcune parti, commenti che ne specificano  le differenze.
 
 - La cartella **`PseudoMalloc/`** contiene:
   - **Solo il codice** per una visualizzazione più snella.
@@ -39,9 +39,7 @@ Il programma `main` presenta una funzione che permette all'utilizzatore di testa
 ### Nota sulla gestione dei puntatori
 
 Questa funzione di gestione puntatori è stata volutamente complicata, al posto di avere dei banali controlli sui valori dell'array che contiene i puntatori, del tipo:
-```c
 if (arrayPuntatori[i] == NULL) { ... }
-
 ho voluto usare la stessa metodologia di controllo per spazi liberi e occupati applicata nel buddyAllocator, ossia ho utilizzato un altra bitmap che ne tiene conto.
 
 

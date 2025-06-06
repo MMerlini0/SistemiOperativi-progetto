@@ -3,6 +3,7 @@
 
 #include "buddy_allocator.h"
 #include "bit_map.h"
+#include "mallocFreeInterface.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,8 +32,6 @@ BuddyAllocator alloc;
 // Definisco la bitmap usata per tenere conto dello stato dei puntatori
 BitMap bitmapInterna;
 
-// Array di interi, che salva la memoria richiesta e assegnata ad ogni puntatore
-int array_memoriaRichiesta[NUMEROPUNTATORI];
 
 // Array di char che simula la memoria totale che il buddyAllocator gestira'
 char memoria_totale[BUDDYALLOCATOR_TOTAL_MEMORY_SIZE]; // LISTA DI 1MB 
@@ -41,7 +40,7 @@ char memoria_totale[BUDDYALLOCATOR_TOTAL_MEMORY_SIZE]; // LISTA DI 1MB
 
 
 int main(int argc, char *argv[]) {
-    printf("\n\n\n\n\n\n\n\n\n\n\n\n\nInizio programma...\n");
+    printf("\n\n\n\n\n\n\nInizio programma...\n");
     printf("Mi calcolo quanti byte utilizzo per la bitmap sui puntatori che usero'\n");
     int BYTEOFNUMEROPUNTATORI = BitMap_getBytes(NUMEROPUNTATORI); // Mi prendo quandi byte occupano i puntatori (per la bitmap)
     printf("Byte per bitmap interna: %d\n", BYTEOFNUMEROPUNTATORI);
@@ -116,25 +115,18 @@ int main(int argc, char *argv[]) {
                 printf("\nQuanta memoria vuoi allocare? (in byte)\n");
                 int memoriaRichiesta = 0;
                 scanf("%d", &memoriaRichiesta);
-                // Caso buddyAllocator
-                if (memoriaRichiesta < (PAGESIZE/4)) {
-                    // printf("Allocazione tramite BuddyAllocator\n");
-                    puntatori[posizione] = BuddyAllocator_malloc(&alloc, memoriaRichiesta);
-                    if(puntatori[posizione] == NULL) { // caso in cui fallisce il buddyAllocator_malloc e riporta NULL
-                        printf("!!! Errore nell'allocazione tramite BuddyAllocator !!!\n");
-                        continue;
-                    }
-                    printf("\nRicevuto blocco di memoria: %p\n", puntatori[posizione]);
-                    array_memoriaRichiesta[posizione] = memoriaRichiesta;
+
+                printf("Chiamo la funzione disastrOS_malloc\n");
+                puntatori[posizione] = disastrOS_malloc(&alloc, memoriaRichiesta);
+
+                // caso in cui fallisce il buddyAllocator_malloc e riporta NULL
+                if(puntatori[posizione] == NULL) { 
+                    printf("!!! Errore nell'allocazione tramite BuddyAllocator !!!\n");
+                    continue;
                 }
-                else { // Caso mmap()
-                    printf("Allocazione tramite mmap\n");
-                    printf("Arrotondo la dimensione richiesta al multiplo maggiore della dim. pagina\n");
-                    int memoriaRichiesta_arrotondata = ((memoriaRichiesta + PAGESIZE - 1) / PAGESIZE) * PAGESIZE;
-                    puntatori[posizione] = mmap(NULL, memoriaRichiesta_arrotondata, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-                    printf("\nRicevuto blocco di memoria: %p\n", puntatori[posizione]);
-                    array_memoriaRichiesta[posizione] = memoriaRichiesta_arrotondata;
-                }
+
+                printf("\nRicevuto blocco di memoria: %p\n", puntatori[posizione]);
+
                 // Setto il bit della bitmap ad occupato
                 BitMap_setBit(&bitmapInterna, posizione, 1);
                 printf("Stato dei puntatori disponibili:\n");
@@ -142,11 +134,14 @@ int main(int argc, char *argv[]) {
             }
         }
 
+
+
+
         if(scelta == 2) { // free
             printf("Liberazione memoria\n");
             printf("Stato bitmap: ");
             BitmapMain_print(&bitmapInterna);
-            printf("Scegliere numero blocco memoria da liberare: ");
+            printf("Scegliere numero blocco memoria da liberare (si parte da 0): ");
             int bloccoDaLiberare = 0;
             scanf("%d", &bloccoDaLiberare);
             if (bloccoDaLiberare > NUMEROPUNTATORI) {
@@ -155,44 +150,34 @@ int main(int argc, char *argv[]) {
                 if (BitMap_bit(&bitmapInterna, bloccoDaLiberare) == 0) {
                     printf("Stai provando a liberare un blocco gia libero\n");
                 } else {
-                    if (array_memoriaRichiesta[bloccoDaLiberare] < (PAGESIZE/4)) { //libero da buddyAllocator
-                        printf("Sto liberando dal buddyAllocator\n");
-                        BuddyAllocator_free(&alloc, puntatori[bloccoDaLiberare]);
-                    }
-                    else { // libero da munmap
-                        printf("Sto liberando da mmap()\n");
-                        munmap(puntatori[bloccoDaLiberare], array_memoriaRichiesta[bloccoDaLiberare]);
-                    }
+                    printf("Chiamo la funzione disastrOS_free\n");
+                    disastrOS_free(&alloc, puntatori[bloccoDaLiberare]);
                 }
             }
-            // libero bit dalla bitmap, azzero valore nella arraymemoriarichiesta, setto a NULL rispettivo indice da array puntatori
+            // libero bit dalla bitmap, setto a NULL rispettivo indice da array puntatori
             BitMap_setBit(&bitmapInterna, bloccoDaLiberare, 0);
-            array_memoriaRichiesta[bloccoDaLiberare] = 0;
             puntatori[bloccoDaLiberare] = NULL;
         }
 
-        if(scelta == 3) {
-            // FINCHE HO BLOCCHI DA LIBERARE LIBERO
-            // CHECK SU BITMAP
-            // CHIAMO FUNZIONI
-            printf("Deallocazione di ogni memoria\n");
-            for (int i = 0; i < NUMEROPUNTATORI; i++) { // Guardo ogni posizione della bitmap
-                if (BitMap_bit(&bitmapInterna, i)) { // se è occupato
-                    if (array_memoriaRichiesta[i] < (PAGESIZE/4)) { //libero da buddyAllocator
-                        printf("Sto liberando dal buddyAllocator\n");
-                        BuddyAllocator_free(&alloc, puntatori[i]);
-                    }
-                    else { // libero da munmap
-                        printf("Sto liberando da mmap()\n");
-                        munmap(puntatori[i], array_memoriaRichiesta[i]);
-                    }
-                }
-            }
+
+
+        if (scelta == 3) { // Terminazione programma        
             break;
         }
     }
+
+
     printf("----Terminazione programma----\n");
     printf("Deallocato ogni spazio di memoria\n");
+    // FINCHE HO BLOCCHI DA LIBERARE LIBERO
+    // CHECK SU BITMAP
+    // CHIAMO FUNZIONI
+    for (int i = 0; i < NUMEROPUNTATORI; i++) { // Guardo ogni posizione della bitmap
+                if (BitMap_bit(&bitmapInterna, i)) { // se è occupato
+                    printf("Chiamo la funzione disastrOS_free\n");
+                    disastrOS_free(&alloc, puntatori[i]);
+                }
+            }
     printf("Deallocazione void** puntatori\n");
     free(puntatori);
     return 1;

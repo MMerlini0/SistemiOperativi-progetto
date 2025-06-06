@@ -58,7 +58,7 @@ void BitMap_setChildrensBit(BitMap *bit_map, int bit_num, int status) {
   int figlioSx = 2 * bit_num + 1;
   BitMap_setChildrensBit(bit_map, figlioSx, status);
   int figlioDx = 2 * bit_num + 2;
-  BitMap_setChildrensBit(bit_map, figlioSx, status);
+  BitMap_setChildrensBit(bit_map, figlioDx, status);
 
 }
 // Fine delle funzioni ausiliarie per l'implementazione a bitmap
@@ -174,7 +174,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   if (target_level < 0) target_level = 0;
   if (target_level > total_levels) target_level = total_levels;
 
-  printf("\n Livello da assegnare: %d", target_level);
+  printf("\nLivello da assegnare: %d", target_level);
 
   // CERCO UN BLOCCO LIBERO NEL LIVELLO TROCATO
   int freeidx=-1;  //free rimarrà -1 se non troviamo nessun blocco libero

@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "assert.h": "c",
+        "malloc&freeinterface.h": "c",
+        "bit_map.h": "c",
+        "mman.h": "c"
+    }
+}

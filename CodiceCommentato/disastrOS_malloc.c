@@ -42,32 +42,23 @@ char memoria_totale[BUDDYALLOCATOR_TOTAL_MEMORY_SIZE]; // LISTA DI 1MB
 
 int main(int argc, char *argv[]) {
     printf("\n\n\n\n\n\n\n\n\n\n\n\n\nInizio programma...\n");
-    sleep(1);
     printf("Mi calcolo quanti byte utilizzo per la bitmap sui puntatori che usero'\n");
-    sleep(1);
     int BYTEOFNUMEROPUNTATORI = BitMap_getBytes(NUMEROPUNTATORI); // Mi prendo quandi byte occupano i puntatori (per la bitmap)
     printf("Byte per bitmap interna: %d\n", BYTEOFNUMEROPUNTATORI);
-    sleep(1);
     printf("Creo buffer interno per la bitmap dei puntatori\n");
     char bufferInterno[BYTEOFNUMEROPUNTATORI]; // Creo un array di byte come buffer per la bitmap dei puntatori del main
     memset(bufferInterno, 0, BYTEOFNUMEROPUNTATORI); // azzero i valori
-    sleep(1);
     printf("Creazione di un array di NUMEROPUNTATORI puntatori void*, dove salverò gli indirizzi di memoria che richiedero'\n");
     void** puntatori = (void**)malloc(NUMEROPUNTATORI * sizeof(void*));  // CREO ARRAY DI NUMEROPUNTATORI PUNTATORI A PUNTATORI VOID* E LI SETTO A VOID
-    sleep(1);
     printf("Inizializzazione di ogni valore di questo array a NULL\n");
     for (int i = 0; i < NUMEROPUNTATORI; ++i) {
         puntatori[i] = NULL;
     }
-    sleep(1);
     printf("Inizializzazione bitMap interna\n");
     BitMap_init(&bitmapInterna, NUMEROPUNTATORI, bufferInterno);
-    sleep(1);
     long PAGESIZE = getpagesize();
     printf("Acquisita dimensione di pagina del sistema, dimensione: %ld\n", PAGESIZE);
-    sleep(1);
     printf("\n\n------------ INIZIALIZZAZIONE BUDDY ALLOCATOR ------------\n\n");
-    sleep(1);
     // RICHIESTA PER UTENTE NUMERO LIVELLI NEL BUDDY
     printf("Scegliere numero livelli massimi per il buddyAllocator: \n");
     int BUDDY_LEVELS;
@@ -76,7 +67,6 @@ int main(int argc, char *argv[]) {
     int BUFFER_SIZE = BufferSizeCalculator(BUDDY_LEVELS);
     // SUDDIVISIONE DELLA MEMORIA TOTALE IN ZONA BUFFER (per bitmap) E ZONA DI MEMORIA
     int MEMORY_SIZE = BUDDYALLOCATOR_TOTAL_MEMORY_SIZE - BUFFER_SIZE;
-    sleep(1);
     printf("\n\nMEMORY SIZE: %d\nBUFFER SIZE: %d\n", MEMORY_SIZE, BUFFER_SIZE);
     char* buffer = memoria_totale;                    // inizia da inizio array
     char* memory = memoria_totale + BUFFER_SIZE;      // parte dopo la bitmap
@@ -84,9 +74,7 @@ int main(int argc, char *argv[]) {
     int MIN_BUCKET_SIZE =  (MEMORY_SIZE>>(BUDDY_LEVELS));
     printf("\nDimensione minima del bucket: %d\n", MIN_BUCKET_SIZE);
     // ORA CHE HO I PARAMETRI INIZIALIZZO
-    sleep(1);
     printf("Inizializzazione... \n");
-    sleep(1);
     int costruttore = BuddyAllocator_init(&alloc,
                         BUDDY_LEVELS,
                         buffer,
@@ -100,7 +88,6 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     printf("\n\n---------- DONE ----------\n\n");
-    sleep(1);
 
 
 
@@ -131,7 +118,7 @@ int main(int argc, char *argv[]) {
                 scanf("%d", &memoriaRichiesta);
                 // Caso buddyAllocator
                 if (memoriaRichiesta < (PAGESIZE/4)) {
-                    printf("Allocazione tramite BuddyAllocator\n");
+                    // printf("Allocazione tramite BuddyAllocator\n");
                     puntatori[posizione] = BuddyAllocator_malloc(&alloc, memoriaRichiesta);
                     if(puntatori[posizione] == NULL) { // caso in cui fallisce il buddyAllocator_malloc e riporta NULL
                         printf("!!! Errore nell'allocazione tramite BuddyAllocator !!!\n");

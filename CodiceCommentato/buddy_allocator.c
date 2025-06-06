@@ -50,26 +50,16 @@ void BitMap_setParentsBit(BitMap *bit_map, int bit_num, int status){
 
 // Funzione che, dato un indice e uno status, setta l'indice e tutti i suoi figli a status
 void BitMap_setChildrensBit(BitMap *bit_map, int bit_num, int status) {
-  // Per evitare ricorsioni di funzioni, creo un array dove inserirò tutti i bit su cui voglio
-  // eseguire la funzione, popolandola ogni volta con i figli dei bit passati
-  int stack[bit_map->num_bits];
-  int top = 0;
-  stack[top++] = bit_num; // INSERISCO IL BIT PASSATO
-  // Inizio iterazione
-  while (top > 0) {
-      int current = stack[--top];  // Estrai un nodo dallo stack
-      if (current >= bit_map->num_bits)
-          continue;                // Ignora se è fuori dai limiti della bitmap
-      BitMap_setBit(bit_map, current, status);
-      // Calcola gli indici dei figli
-      int left = 2 * current + 1;
-      int right = 2 * current + 2;
-      // Inserisco i figli nell'array per iterare l'operazione su di loro
-      if (right < bit_map->num_bits)
-          stack[top++] = right;
-      if (left < bit_map->num_bits)
-          stack[top++] = left;
-  }
+  // In questa funzione rimuovere la ricorsione comporterebbe un peggioramento delle performance
+  // e della memoria utilizzata
+  if (bit_num >= bit_map->num_bits) return; // Controllo se sono uscito dai limiti della bitmap
+  BitMap_setBit(bit_map, bit_num, status);
+  // calcolo indice dei figli e chiamo ricorsivamente setChildrens con quell'indice
+  int figlioSx = 2 * bit_num + 1;
+  BitMap_setChildrensBit(bit_map, figlioSx, status);
+  int figlioDx = 2 * bit_num + 2;
+  BitMap_setChildrensBit(bit_map, figlioSx, status);
+
 }
 // Fine delle funzioni ausiliarie per l'implementazione a bitmap
 
@@ -204,7 +194,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   }
   // SE NON E' IL PRIMO LIVELLO
   else {
-    // RICORSIONE SU TUTTI I LIVELLI DI QUESTO BLOCCO FINO A QUELLI DEL SUCCESSIVO
+    // Ricorsione su tutte le posizioni di questo livello fino a quelle del successivo
     for (int j = firstIdx(target_level); j < firstIdx(target_level+1); j++) {
       // CONTROLLO SE LIBERO
       if (!BitMap_bit(&alloc->bitmap, j)) {

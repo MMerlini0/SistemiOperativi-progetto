@@ -6,7 +6,7 @@
 
 
 // Raccolta di funzioni ausiliarie per la bitmap, che sfruttano le propriet' dell'albero binario
-// (Le funzioni originarie consideravano che l'albero partisse dalla posizione 1 di un array)
+
 
 // Riporta il livello a cui mi trovo dell'indice (posizione)
 int levelIdx(size_t idx){
@@ -16,16 +16,16 @@ int levelIdx(size_t idx){
 
 // Funzione che, dato un indice, ne riporta l'indice del fratello
 int buddyIdx(int idx) { 
-  if (idx == 0) { return 0;} // CASO RADICE
-  if (idx&0x1){ // RIPORTA 1 SE idx E' DISPARI -> idx E' UN FIGLIO DI SX
-    return idx+1; // NEL CASO DI idx SINISTRO, COMPAGNO = DX
+  if (idx == 0) { return 0;}
+  if (idx&0x1) {
+    return idx+1;
   }
-  return idx-1; // SE E'DX RIPORTO IL SX
+  return idx-1;
 }
 
 // Funzione che, dato un indice, ne riporta l'indice del padre
 int parentIdx(int idx){
-  if (idx == 0) return -1; // CASO DELLA RADICE
+  if (idx == 0) return -1;
   return (idx - 1) / 2;
 }
 
@@ -50,26 +50,13 @@ void BitMap_setParentsBit(BitMap *bit_map, int bit_num, int status){
 
 // Funzione che, dato un indice e uno status, setta l'indice e tutti i suoi figli a status
 void BitMap_setChildrensBit(BitMap *bit_map, int bit_num, int status) {
-  // Per evitare ricorsioni di funzioni, creo un array dove inserirò tutti i bit su cui voglio
-  // eseguire la funzione, popolandola ogni volta con i figli dei bit passati
-  int stack[bit_map->num_bits];
-  int top = 0;
-  stack[top++] = bit_num; // INSERISCO IL BIT PASSATO
-  // Inizio iterazione
-  while (top > 0) {
-      int current = stack[--top];  // Estrai un nodo dallo stack
-      if (current >= bit_map->num_bits)
-          continue;                // Ignora se è fuori dai limiti della bitmap
-      BitMap_setBit(bit_map, current, status);
-      // Calcola gli indici dei figli
-      int left = 2 * current + 1;
-      int right = 2 * current + 2;
-      // Inserisco i figli nell'array per iterare l'operazione su di loro
-      if (right < bit_map->num_bits)
-          stack[top++] = right;
-      if (left < bit_map->num_bits)
-          stack[top++] = left;
-  }
+  if (bit_num >= bit_map->num_bits) return;
+  BitMap_setBit(bit_map, bit_num, status);
+  int figlioSx = 2 * bit_num + 1;
+  BitMap_setChildrensBit(bit_map, figlioSx, status);
+  int figlioDx = 2 * bit_num + 2;
+  BitMap_setChildrensBit(bit_map, figlioDx, status);
+
 }
 // Fine delle funzioni ausiliarie per l'implementazione a bitmap
 
@@ -120,15 +107,22 @@ int BuddyAllocator_init(BuddyAllocator* alloc,
   BitMap_init(&alloc->bitmap, num_bits, bufferBitmap);
   Bitmap_print(&alloc->bitmap);
   return 1;
+
 };
+
+
+
+
 
 
 
 // Funzione per allocazione della memoria
 void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   
+
   size += sizeof(int);
 
+  
   int max_size = alloc->memory_size;
   int min_size = alloc->min_bucket_size;
   int total_levels = alloc->num_levels;
@@ -138,11 +132,20 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
       printf("\nEXEDED MAX DIMENSION, MEMORY FAULT.\n");
       return NULL;
   }
+
+
   int target_level = total_levels - (int)ceil(log2((double)size / min_size));
+
+
   if (target_level < 0) target_level = 0;
   if (target_level > total_levels) target_level = total_levels;
-  printf("\n Livello da assegnare: %d", target_level);
+
+  printf("\nLivello da assegnare: %d", target_level);
+
+
   int freeidx=-1;
+
+
   if ( target_level == 0) {
     if (!BitMap_bit(&alloc->bitmap, firstIdx(target_level))) {
       freeidx = 0;
@@ -161,13 +164,19 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
       }
     }
   }
+
   if(freeidx == -1){  
     printf("\nNon ci sono blocchi liberi nel livello %d\n", target_level);
     return NULL;
   }
+
+
   BitMap_setParentsBit(&alloc->bitmap, freeidx, 1);
   BitMap_setChildrensBit(&alloc->bitmap, freeidx, 1);
+
   int memory_size_at_level = alloc->min_bucket_size << (alloc->num_levels - target_level);
+
+
   char *indirizzo = alloc->memory + startIdx(freeidx) * memory_size_at_level;
   ((int *)indirizzo)[0]=freeidx;
   printf("\nAllocao blocco di memoria");
@@ -178,6 +187,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   printf("\nPuntatore ricevuto: %p",indirizzo+sizeof(int));
   printf("\nAlbero BITMAP dopo l'allocazione:\n");
   Bitmap_print(&alloc->bitmap);
+
   return (void *)(indirizzo + sizeof(int));
 };
 
@@ -189,12 +199,17 @@ void BuddyAllocator_free(BuddyAllocator *alloc, void *mem){
     printf("MEMORY FAULT, BLOCCO SU CUI RICHIESTA FREE = NULL");
     return;
   }
+  
   printf("\nLibero il blocco puntato da %p\n", mem);
+
   int *primoElem = (int *)mem;
   int indice = primoElem[-1];
   printf("Indice da liberare: %d\n", indice);
+
   BitMap_setChildrensBit(&alloc->bitmap, indice, 0);
+
   merge(&alloc->bitmap, indice);
+
   Bitmap_print(&alloc->bitmap);
 }
 
@@ -202,11 +217,15 @@ void BuddyAllocator_free(BuddyAllocator *alloc, void *mem){
 // Funzione che unisce (merge) i blocchi, se liberi, fino alla radice
 void merge(BitMap *bitmap, int idx) {
     assert("Non puoi fare il merge su un bit libero" && !BitMap_bit(bitmap, idx));
-    while (idx != 0) {
+
+    while (idx != 0) { 
         int indice_fratello = buddyIdx(idx);
+
+
         if (!BitMap_bit(bitmap, indice_fratello)) {
             printf("Il buddy di %d, ovvero %d, e' libero: MERGE\n", idx, indice_fratello);
             printf("Eseguo il merge dei buddy %d e %d al livello %d . . .\n", idx, indice_fratello, levelIdx(idx));
+
             int indice_genitore = parentIdx(idx);
             BitMap_setBit(bitmap, indice_genitore, 0);
             idx = indice_genitore;
@@ -226,23 +245,24 @@ void Bitmap_print(BitMap *bit_map){
     int lvl = -1; 
     int tot = levelIdx(bit_map->num_bits) - 1;
     for (int i = 0; i < bit_map->num_bits; i++){  
-        if (remain_to_print == 0){
-            if(lvl==tot){
+        if (remain_to_print == 0) {
+            if(lvl==tot){ 
               break;
             } 
-            printf("\n\033[93mLivello %d: \t\033[0m", ++lvl);
-            for (int j = 0; j < (1 << tot) - (1 << lvl); j++){
-              printf(" ");
+            printf("\n\033[93mLivello %d: \t\033[0m", ++lvl);    
+            for (int j = 0; j < (1 << tot) - (1 << lvl); j++){   
+              printf(" "); 
             } 
-            remain_to_print = 1 << lvl;
+            remain_to_print = 1 << lvl; 
         }
-        if (BitMap_bit(bit_map, i)==0){
+        if (BitMap_bit(bit_map, i)==0){ 
           printf("\033[32m%d\033[0m ", BitMap_bit(bit_map, i));
         }
-        else{
+        else{   
           printf("\033[31m%d\033[0m ", BitMap_bit(bit_map, i));
         }
-        remain_to_print--;
+        remain_to_print--; 
     }
     printf("\n");
 };
+

@@ -6,10 +6,10 @@ CFLAGS  = -Wall -std=gnu99
 SRC     = bit_map.c \
           buddy_allocator.c \
           mallocFreeInterface.c \
-          disastrOS_malloc.c
+          disastrOS_AllocTest.c
 OBJ     = $(SRC:.c=.o)
 
-BIN     = disastrOS_malloc          # eseguibile finale
+BIN     = disastrOS_AllocTest         # eseguibile finale
 
 .PHONY: all clean
 

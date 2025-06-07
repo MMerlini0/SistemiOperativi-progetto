@@ -34,12 +34,27 @@ Il programma `main` presenta una funzione che permette all'utilizzatore di testa
 
 > Il `numero di puntatori massimi` quali è possibile gestire è riportato dalla variabile **NUMEROPUNTATORI** definita *all'inizio del codice* presente nel file main **disastrOS_malloc.c**, `il valore di default è 10`.
 
----
 
 ### Nota sulla gestione dei puntatori
 
 Questa funzione di gestione puntatori è stata volutamente complicata, al posto di avere dei banali controlli sui valori dell'array che contiene i puntatori, del tipo:
 if (arrayPuntatori[i] == NULL) { ... }
 ho voluto usare la stessa metodologia di controllo per spazi liberi e occupati applicata nel buddyAllocator, ossia ho utilizzato un altra bitmap che ne tiene conto.
+
+
+---
+
+## Programma `mallocFreeInterface`
+
+Il programma `mallocFreeInterface` è un'interfaccia che permette di chiamare le singole funzioni
+- disastrOS_malloc(BuddyAllocator* alloc, int size)
+- disastrOS_free(BuddyAllocator* alloc, void* puntatore)
+Aggiungendo tre funzioni principali:
+> **Aggiunta delle informazioni sulla memoria richiesta** (maggiorata di sizeof(int)) all'inizio della memoria allocata
+> **Chiamata della giusta funzione** di malloc / free tramite BuddyAllocator o mmap, controllando la size
+> Esecuzione di un **padding e controllo del padding** durante ogni chiamata di malloc o free
+
+
+---
 
 

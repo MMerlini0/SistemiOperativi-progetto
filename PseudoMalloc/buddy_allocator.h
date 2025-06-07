@@ -6,8 +6,6 @@
 
 
 
-
-// Definizione della struct BuddyAllocator
 typedef struct  {
   BitMap bitmap;
   int num_levels;

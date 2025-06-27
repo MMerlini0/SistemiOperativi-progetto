@@ -158,7 +158,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   else {
     for (int j = firstIdx(target_level); j < firstIdx(target_level+1); j++) {
       if (!BitMap_bit(&alloc->bitmap, j)) {
-        printf("\nTrovato blocco libero nel livello %d\n", j);
+        printf("\nTrovato blocco libero nella posizione %d\n", j);
         freeidx=j;
         break;
       }

@@ -87,7 +87,7 @@ void disastrOS_free(BuddyAllocator* alloc, void* puntatore) {
         BuddyAllocator_free(alloc, puntatoreTemp);
     }
     else { // Caso mmap
-        printf("Free tramite mmap\n");
+        printf("Free tramite munmap\n");
         munmap(puntatoreTemp, memoriaRichiesta);
     }
     return;

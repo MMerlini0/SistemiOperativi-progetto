@@ -22,7 +22,7 @@
 
 // Memoria che do al buddyAllocator da gestire
 #define BUDDYALLOCATOR_TOTAL_MEMORY_SIZE (1024*1024) // LA MEMORY SIZE INIZIALE E' DI 1MB, COME ASSEGNATO NELLE SPECIFICHE DI PROGETTO
-// Con quanti puntatori voglio 'giocare'
+// Quanti puntatori voglio 'gestire'
 #define NUMEROPUNTATORI 10
 
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     int BUDDY_LEVELS;
     scanf("%d", &BUDDY_LEVELS);
     if (BUDDY_LEVELS>=100) {
-        printf("Numero ovviamente eccessivo, consiglio num liv < 30\n");
+        printf("Numero eccessivo, consiglio num liv < 30\n");
         return 0;
     }
 

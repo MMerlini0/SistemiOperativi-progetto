@@ -39,12 +39,14 @@ void* disastrOS_malloc(BuddyAllocator* alloc, int size) {
 
     // Aggiungo memoriaRichiesta in prima posizione del blocco di memoria
     *((int*)puntatoreMemoria) = memoriaRichiesta;
+    printf("memoriaRichiesta scritta (interface): %d\n", memoriaRichiesta);
     // Sposto il puntatore a dopo il valore inserito
     puntatoreMemoria = puntatoreMemoria + sizeof(int);
 
     // Calcolo di un carattere deterministico con il quale sporcare la memoria per controllo
     // Uso un carattere alfabetico da A a Z, prendendo il resto della divisione della memoriaRichiesta con 26
     char c = 'A' + (memoriaRichiesta % 26);
+    
 
     // Riempio il resto della memoria con questo carattere
     printf("Inserimento del carattere di padding.\n");
@@ -78,8 +80,7 @@ void disastrOS_free(BuddyAllocator* alloc, void* puntatore) {
     // Mi prendo il valore della memoriaRichiesta
     int memoriaRichiesta = *((int*)puntatoreTemp);
 
-    // TODO: rimuovere
-    printf("memoriaRichiesta letta: %d\n", memoriaRichiesta);
+    printf("memoriaRichiesta letta (interface): %d\n", memoriaRichiesta);
 
 
     // Calcolo il valore che dovrei trovarci

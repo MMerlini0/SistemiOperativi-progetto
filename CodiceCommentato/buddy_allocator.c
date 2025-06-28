@@ -227,7 +227,7 @@ void* BuddyAllocator_malloc(BuddyAllocator* alloc, int size) {
   // CI METTO L'INDICE DEL BLOCCO
   ((int *)indirizzo)[0]=freeidx;
   printf("\nAllocao blocco di memoria");
-  printf("\nDimensione richiesta: %d",size);
+  printf("\nDimensione richiesta (BuddyAllocator): %d",size);
   printf("\nLivello blocco: %d", target_level);
   printf("\nDimensione blocco usato: %d", memory_size_at_level);
   printf("\nIndice del livello: %d", freeidx);

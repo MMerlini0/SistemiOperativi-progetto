@@ -22,7 +22,7 @@
 
 // Memoria che do al buddyAllocator da gestire
 #define BUDDYALLOCATOR_TOTAL_MEMORY_SIZE (1024*1024) // LA MEMORY SIZE INIZIALE E' DI 1MB, COME ASSEGNATO NELLE SPECIFICHE DI PROGETTO
-// Con quanti puntatori voglio 'giocare'
+// Quanti puntatori voglio 'gestire'
 #define NUMEROPUNTATORI 10
 
 
@@ -41,15 +41,15 @@ char memoria_totale[BUDDYALLOCATOR_TOTAL_MEMORY_SIZE]; // LISTA DI 1MB
 
 int main(int argc, char *argv[]) {
     printf("\n\n\n\n\n\n\nInizio programma...\n");
-    printf("Mi calcolo quanti byte utilizzo per la bitmap sui puntatori che usero'\n");
+    printf("Calcolo byte richiesti per bitmap dei puntatori'\n");
     int BYTEOFNUMEROPUNTATORI = BitMap_getBytes(NUMEROPUNTATORI); // Mi prendo quandi byte occupano i puntatori (per la bitmap)
     printf("Byte per bitmap interna: %d\n", BYTEOFNUMEROPUNTATORI);
-    printf("Creo buffer interno per la bitmap dei puntatori\n");
+    printf("Creazione buffer interno per bitmap dei puntatori\n");
     char bufferInterno[BYTEOFNUMEROPUNTATORI]; // Creo un array di byte come buffer per la bitmap dei puntatori del main
     memset(bufferInterno, 0, BYTEOFNUMEROPUNTATORI); // azzero i valori
-    printf("Creazione di un array di NUMEROPUNTATORI puntatori void*, dove salverò gli indirizzi di memoria che richiedero'\n");
+    printf("Creazione di un array di NUMEROPUNTATORI puntatori void* per indirizzi di memoria richiesta'\n");
     void** puntatori = (void**)malloc(NUMEROPUNTATORI * sizeof(void*));  // CREO ARRAY DI NUMEROPUNTATORI PUNTATORI A PUNTATORI VOID* E LI SETTO A VOID
-    printf("Inizializzazione di ogni valore di questo array a NULL\n");
+    printf("Inizializzazione dell'array a NULL\n");
     for (int i = 0; i < NUMEROPUNTATORI; ++i) {
         puntatori[i] = NULL;
     }
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     int BUDDY_LEVELS;
     scanf("%d", &BUDDY_LEVELS);
     if (BUDDY_LEVELS>=100) {
-        printf("Numero ovviamente eccessivo, consiglio num liv < 30\n");
+        printf("Numero eccessivo, consiglio num liv < 30\n");
         return 0;
     }
     // CALCOLO DIMENSIONE DEL BUFFER
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
     int MIN_BUCKET_SIZE =  (MEMORY_SIZE>>(BUDDY_LEVELS));
     printf("\nDimensione minima del bucket: %d\n", MIN_BUCKET_SIZE);
     // ORA CHE HO I PARAMETRI INIZIALIZZO
-    printf("Inizializzazione... \n");
+    printf("Inizializzazione BuddyAllocator... \n");
     int costruttore = BuddyAllocator_init(&alloc,
                         BUDDY_LEVELS,
                         buffer,
@@ -116,11 +116,11 @@ int main(int argc, char *argv[]) {
             if (posizione == -1) {
                 printf("Hai utilizzato tutti i puntatori, liberarne qualcuno\n");
             } else { // Se ho memoria libera
-                printf("\nQuanta memoria vuoi allocare? (in byte)\n");
+                printf("\nQuanta memoria vuoi allocare? (byte)\n");
                 int memoriaRichiesta = 0;
                 scanf("%d", &memoriaRichiesta);
 
-                printf("Chiamo la funzione disastrOS_malloc\n");
+                printf("Chiamata a funzione disastrOS_malloc\n");
                 puntatori[posizione] = disastrOS_malloc(&alloc, memoriaRichiesta);
 
                 // caso in cui fallisce il buddyAllocator_malloc e riporta NULL
@@ -142,14 +142,14 @@ int main(int argc, char *argv[]) {
 
 
         if(scelta == 2) { // free
-            printf("Liberazione memoria\n\n\n\n");
+            printf("Deallocazione memoria\n\n\n\n");
             printf("Stato bitmap: ");
             BitmapMain_print(&bitmapInterna);
-            printf("Scegliere numero blocco memoria da liberare (si parte da 0): ");
+            printf("Scegliere indice blocco memoria da liberare (prima posizione 0): ");
             int bloccoDaLiberare = 0;
             scanf("%d", &bloccoDaLiberare);
             if (bloccoDaLiberare > NUMEROPUNTATORI) {
-                printf("Hai pigiato un numero sbagliato\n");
+                printf("Errore lettura numero\n");
             } else {
                 if (BitMap_bit(&bitmapInterna, bloccoDaLiberare) == 0) {
                     printf("Stai provando a liberare un blocco gia libero\n");

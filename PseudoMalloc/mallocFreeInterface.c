@@ -27,13 +27,13 @@ void* disastrOS_malloc(BuddyAllocator* alloc, int size) {
     }
     else { // Caso mmap
         printf("Allocazione tramite mmap\n");
-        memoriaRichiesta = ((memoriaRichiesta + PAGESIZE - 1) / PAGESIZE) * PAGESIZE;
         puntatoreMemoria = mmap(NULL, memoriaRichiesta, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     }
 
 
 
     *((int*)puntatoreMemoria) = memoriaRichiesta;
+    printf("memoriaRichiesta scritta (interface): %d\n", memoriaRichiesta);
     puntatoreMemoria = puntatoreMemoria + sizeof(int);
 
     char c = 'A' + (memoriaRichiesta % 26);

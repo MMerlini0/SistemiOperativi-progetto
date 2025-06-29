@@ -31,7 +31,6 @@ void* disastrOS_malloc(BuddyAllocator* alloc, int size) {
     else { // Caso mmap
         printf("Allocazione tramite mmap\n");
         // Arrotondo la dimensione richiesta al multiplo maggiore della dim. pagina
-        memoriaRichiesta = ((memoriaRichiesta + PAGESIZE - 1) / PAGESIZE) * PAGESIZE;
         puntatoreMemoria = mmap(NULL, memoriaRichiesta, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     }
 
